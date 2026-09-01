@@ -1,8 +1,33 @@
-use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
+use crossterm::event::{self, Event, KeyCode, KeyEventKind};
+use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
+use std::io;
 
-pub fn test() -> std::io::Result<()> {
+pub fn start() -> io::Result<()> {
+    // Enable raw mode to read key presses instantly
+    enable_raw_mode()?;
 
-    crossterm::Command
+    println!("Press 't' (or 'q' to quit):");
 
-    return Ok(());
+    loop {
+        // Read the next terminal event
+        if let Event::Key(key) = event::read()? {
+            // Check if it's a key press event (avoids double-firing on some platforms)
+            if key.kind == KeyEventKind::Press {
+                match key.code {
+                    KeyCode::Char('t') => {
+                        println!("\r\nYou pressed 't'!");
+                    }
+                    KeyCode::Char('q') => {
+                        break; // Exit loop on 'q'
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
+
+    // Always disable raw mode before exiting
+    disable_raw_mode()?;
+    Ok(())
 }
+
