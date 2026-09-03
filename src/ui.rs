@@ -1,8 +1,8 @@
-use ratatui::{self, DefaultTerminal, Frame, style::Stylize, text::Line};
+use ratatui::{self, DefaultTerminal, Frame, style::Stylize, text::Line, widgets::Widget};
 use std::io;
 
 pub struct App {
-    exit: bool,
+    pub exit: bool,
 }
 
 impl App {
@@ -31,20 +31,15 @@ impl Widget for &App {
     }
 }
 
-pub fn init_terminal() -> io::Result<()> {
+pub fn init_app() -> App {
     let mut terminal = ratatui::init();
     let mut app = App {
         exit: false
     };
 
-    let app_result = app.run(&mut terminal);
+    app.run(&mut terminal);
     ratatui::restore();
     
-    return app_result;
+    return app;
 }
 
-pub fn run_ui() -> io::Result<()> {
-    
-
-    return Ok(());
-}

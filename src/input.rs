@@ -1,15 +1,16 @@
 use crossterm::event::{self, Event, KeyCode, KeyEventKind};
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
+use crate::ui::App;
 use std::io;
 
-pub fn start() -> io::Result<()> {
+pub fn start(app: &mut App) -> io::Result<()> {
     enable_raw_mode();
 
     loop {
         if let Event::Key(key) = event::read()? {
             if key.kind == KeyEventKind::Press {
                 match key.code {
-                    KeyCode::Char('q') => { break; },
+                    KeyCode::Char('q') => { app.exit = true;  break; },
                     KeyCode::Char('t') => { println!("Yolo"); },
                     _ => { }
                 }
