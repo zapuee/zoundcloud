@@ -1,15 +1,33 @@
 use crossterm::{terminal::{disable_raw_mode, enable_raw_mode}};
-use ratatui::{self, DefaultTerminal, Frame, layout::{Constraint, Layout, Rect}, prelude::Color, style::{Style, Stylize}, symbols::border, text::Line, widgets::{Block, Gauge, Widget}};
-use std::io;
+use ratatui::{
+    self,
+    DefaultTerminal,
+    Frame,
+    layout::{Constraint, Layout, Rect},
+    symbols::border,
+    widgets::{Block, List, ListItem, Widget}
+};
+use std::{io, str};
 use crate::input;
 
 pub struct App {
     pub exit: bool,
-    pub progress_bar_color: Color,
-    pub progress_bar_color_index: usize,
+    pub songs: Vec<String>
 }
 
 impl App {
+    fn new() -> Self {
+        Self {
+            exit: false,
+            songs: Vec::new(),
+        }
+    }
+
+    fn add_song(&mut self, song: &str) -> io::Result<()> {
+        self.songs.push(song.to_string());
+        return Ok(());
+    }
+
     fn run(&mut self, terminal: &mut DefaultTerminal) -> io::Result<()> {
         let _ = enable_raw_mode();
         while !self.exit {
@@ -34,44 +52,30 @@ impl Widget for &App {
     where
         Self: Sized,
     {
-        let vertical_layout = Layout::vertical([Constraint::Percentage(20), Constraint::Percentage(80)]);
+        let vertical_layout = Layout::vertical([
+            Constraint::Percentage(20),
+            Constraint::Percentage(80)
+        ]);
+
         let [title_area, gauge_area] = vertical_layout.areas(area);
-        Line::from("Proccess overview").bold().render(area, buf);
 
-        let instructions = Line::from(vec![
-            " Change color ".into(),
-            "<C>".blue().bold(),
-            " Quit ".into(),
-            "<Q>".blue().bold(),
-        ]).centered();
+        let window_border = Block::bordered()
+            .border_set(border::PLAIN);
+        window_border.render(area, buf);
 
-        let block = Block::bordered()
-            .title(Line::from(" Background processes "))
-            .title_bottom(instructions)
-            .border_set(border::THICK);
-
-        let progress_bar = Gauge::default()
-            .gauge_style(Style::default().fg(self.progress_bar_color))
-            .block(block)
-            .label(format!("Process 1: 50%"))
-            .ratio(0.5);
-
-        progress_bar.render(Rect {
-            x: gauge_area.left(),
-            y: gauge_area.top(),
-            width: gauge_area.width,
-            height: 3,
-        }, buf);
+        let song_list = List::new(self.songs.clone())
+            .block(Block::bordered());
+        song_list.render(gauge_area, buf);
     }
 }
 
 pub fn init_app() -> App {
     let mut terminal = ratatui::init();
-    let mut app = App {
-        exit: false,
-        progress_bar_color: Color::White,
-        progress_bar_color_index: 0,
-    };
+    let mut app = App::new();
+
+    for _ in 0..10 {
+        app.add_song("apples");
+    }
 
     let _ = app.run(&mut terminal);
     ratatui::restore();
